@@ -20,6 +20,7 @@ RUN curl -SL --insecure "https://phar.phpunit.de/phpunit.phar" -o phpunit.phar \
 RUN apk update \
     && apk add  --no-cache git mysql-client curl libmcrypt libmcrypt-dev \
     libxml2-dev freetype-dev libpng-dev libjpeg-turbo-dev g++ make autoconf \
+    && apk add rsync \
     && docker-php-source extract \
     && pecl install xdebug redis \
     && docker-php-ext-enable xdebug redis \
