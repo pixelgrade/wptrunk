@@ -1,0 +1,149 @@
+.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: map-get($zindex, header);
+
+    width: 100%;
+
+    @media screen and (max-width: 600px) {
+        .admin-bar & {
+            margin-top: 0 !important;
+        }
+    }
+}
+
+.c-navbar {
+    @extend %heading;
+    @extend %fs-11;
+	height: 100px;
+
+    // in order for customify border-width property to work properly
+    border: 0 solid transparent;
+
+    backface-visibility: hidden;
+
+    a {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+}
+
+.site-header,
+.c-navbar__label,
+.c-navbar__zone--branding {
+
+    .has-hero:not(.is-scrolled) & {
+        position: absolute;
+        margin-top: 0;
+    }
+
+    .has-hero:not(.u-static-header).is-scrolled & {
+        top: 0 !important;
+    }
+
+    @media only screen and (min-width: 600.01px) and (max-width: 64em) {
+        .has-hero.is-scrolled & {
+            top: 0 !important;
+        }
+    }
+
+    @media only screen and (max-width: 600px) {
+        .has-hero.is-scrolled:not(.admin-bar) & {
+            top: 0 !important;
+        }
+    }
+}
+
+@include above(lap) {
+	.c-navbar__zone--middle {
+		max-width: 50%;
+	}
+}
+
+
+.c-navbar__label {
+    z-index: map-get($zindex, header);
+}
+
+.site-header,
+.c-navbar__label,
+.c-navbar__content {
+    @include wp-offset(margin-top, 0, true);
+}
+
+@include below(lap) {
+    @import "mobile";
+}
+
+@import "dropdown";
+
+@include above(lap) {
+    .c-navbar__content {
+        margin-top: 0 !important;
+    }
+
+    .c-navbar__zone--branding {
+        position: static !important;
+        margin-top: 0 !important;
+    }
+
+    .c-navbar__content {
+        height: 100%;
+        border: 0 solid transparent;
+        border-top-width: 0 !important;
+        padding-top: 0 !important;
+    }
+}
+
+.c-navbar .c-meta__share-link {
+    position: absolute;
+    top: 100%;
+
+    width: 100%;
+    left: 0;
+
+    text-transform: uppercase;
+}
+
+.jetpack-social-navigation.jetpack-social-navigation {
+    padding-left: 25px;
+
+    ul a {
+        @extend %fs-18;
+        padding: rem(6px);
+
+        @include below(lap) {
+            color: $gray;
+        }
+    }
+}
+
+@include below(lap) {
+
+    .c-navbar__zone--branding {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+
+        display: none;
+        width: 100%;
+        height: 100%;
+
+        .c-navbar > & {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        // add z-index to bring logo to front on mobile devices
+        // only when navigation isn't opened hence the selector
+        // only after the transition of the menu has ended
+        .c-navbar__checkbox:not(:checked) ~ & {
+            z-index: 1;
+            transition: z-index 0s .3s linear;
+        }
+    }
+}
