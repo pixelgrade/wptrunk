@@ -1,0 +1,134 @@
+li[id*=open_hours_overview] .widget-control-actions {
+  margin-top: 10px; }
+
+li[id*=open_hours_overview] .widget-top a.widget-action:after {
+  content: "\f139"; }
+
+.preview_open_widget {
+  position: fixed;
+  left: 299px;
+  top: 0;
+  z-index: -1;
+  padding: 30px 15px;
+  padding-top: 64px;
+  height: 100%;
+  width: 300px;
+  overflow: scroll;
+  border: 1px solid #ddd;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  background-color: #eee;
+  opacity: 0;
+  transform: translateX(-300px);
+  transition: opacity, transform 0.2s ease-in-out; }
+  .preview_open_widget,
+  .preview_open_widget * {
+    box-sizing: border-box; }
+
+.wp-full-overlay {
+  transition: .2s margin ease-in-out; }
+
+.wp-full-overlay.is--open-hours-section-expanded {
+  margin-left: 599px;
+  margin-right: -300px; }
+  .wp-full-overlay.is--open-hours-section-expanded .preview_open_widget {
+    opacity: 1;
+    transform: translateX(0); }
+
+.open-preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 14px 12px;
+  border-bottom: 1px solid #DDDDDD;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  color: #585858;
+  background-color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600; }
+
+.open_overview_shortcode {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #DDDDDD; }
+  .open_overview_shortcode tr {
+    border-bottom: 1px solid #DDDDDD;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    background-color: #FFFFFF; }
+    .open_overview_shortcode tr:last-child {
+      border-bottom: 0; }
+  .open_overview_shortcode td {
+    padding: 12px 14px; }
+
+.open-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; }
+
+.open-entry__day {
+  font-weight: 600;
+  font-size: 14px; }
+
+.open-entry__hours-schedule,
+.open-entry__hours-closed {
+  text-align: left; }
+
+#open-customize-control-open_hours_overview_setting .customize-control-description {
+  margin-bottom: 10px;
+  font-style: normal; }
+
+.opening-hours-section {
+  margin-bottom: 60px; }
+
+.opening-hours-example {
+  margin-bottom: 10px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  overflow-x: scroll;
+  white-space: nowrap;
+  font-style: italic;
+  line-height: 18px;
+  color: #565D66;
+  background-color: #f4f4f4; }
+
+.opening-hours-list {
+  counter-reset: the-counter;
+  margin-left: 0;
+  list-style: none; }
+  .opening-hours-list li:before {
+    content: counter(the-counter) ".";
+    counter-increment: the-counter; }
+
+.opening-hours-timestamps-explained {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background: url("../images/opening_hours_scheme.png") #ffffff center center no-repeat;
+  background-size: auto auto;
+  opacity: 0;
+  transition: opacity .3s ease-in-out;
+  pointer-events: none; }
+  .show-open-hours-scheme .opening-hours-timestamps-explained {
+    opacity: 1;
+    pointer-events: auto; }
+  .is--open-hours-section-expanded .opening-hours-timestamps-explained {
+    left: -300px; }
+
+.ui-autocomplete {
+  background-color: #FFFFFF;
+  box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.18), 0 2px 10px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #CACACA; }
+
+.ui-menu-item {
+  padding: 3px 5px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 17px; }
+  .ui-menu-item:hover {
+    color: #ffffff;
+    background-color: #007ab6;
+    cursor: pointer; }

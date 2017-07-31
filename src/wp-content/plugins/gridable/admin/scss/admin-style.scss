@@ -1,0 +1,115 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+
+.gridable-ui-content {
+  width: 600px;
+  left: 0;
+  margin: 0 auto;
+
+  .gridable-attribute-field {
+	padding: 5px 10px;
+	position: relative;
+	max-width: 600px;
+	margin: 0 auto;
+  }
+}
+
+.select2-container--gridable {
+  z-index: 999999;
+}
+
+.gridable-ui-content .setting {
+  .name {
+	//line-height: 18px;
+	padding: 18px 0;
+  }
+
+  .select2-container--gridable {
+	float: none;
+	height: 34px;
+
+	.selection {
+	  padding: 0;
+	}
+
+	.select2-selection.select2-selection--single {
+	  background: #fff;
+	  border: 1px solid #aaa;
+	  border-radius: 4px;
+	  min-width: 170px;
+	  padding: 0;
+	  outline:0;
+	  height: 34px;
+
+	  .select2-selection__rendered {
+		width: 100%;
+		text-align: left;
+		height: 32px;
+		display: block;
+	  }
+	}
+  }
+}
+
+.gridable-setting {
+  min-height: 40px;
+
+  .wp-picker-container {
+	left: 35%;
+	top: 25px;
+	width: 260px;
+	position: absolute;
+
+	span {
+	  float: none;
+	  min-height: auto;
+	  padding-top: 0;
+	}
+
+	.wp-color-result {
+	  left:0;
+	  right: auto;
+	  border-bottom: 1px solid #ddd;
+
+	  &:hover {
+		border-bottom: 1px solid #999;
+	  }
+	}
+
+	.wp-picker-input-wrap {
+	  padding-left: 115px;
+	}
+
+  }
+}
+
+
+.gridable-attribute-field .checkbox input[type=checkbox] {
+  margin-top: 17px;
+}
+
+
+
+html {
+	
+    // On Distraction Free Mode, make the Editor bigger
+	#wpcontent, #wpfooter, #poststuff #post-body.columns-2 {
+		transition: margin .3s ease-out;
+	}
+
+	.wp-editor-expand div.mce-toolbar-grp,
+	.wp-editor-expand #wp-content-editor-tools {
+		transition: width .3s ease-out;
+	}
+
+    .focus-on {
+        #wpcontent, #wpfooter {
+            margin-left: 0;
+        }
+        #poststuff #post-body.columns-2 {
+            margin-right: 0;
+        }
+    }
+}

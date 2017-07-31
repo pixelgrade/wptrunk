@@ -1,0 +1,291 @@
+/* ==========================================================================
+   #EDITOR STYLES GRID
+   ========================================================================== */
+
+$gutenberg-border: #E0E5E9;
+$outline-spacing: 1em;
+
+
+// Set Editor Style Data Attributes Alternatives
+$c-row: '.row';
+$c-col: '.col';
+$c-row__item: '.grid__item';
+$c-col-prefix: 'data-sh-column-attr-size';
+
+$gridable-row-simple: '[data-sh-row-attr-row_style=simple]';
+$gridable-row-boxed: '[data-sh-row-attr-row_style=boxed]';
+
+$gridable-col-simple: '.row .grid__item[data-sh-column-attr-column_style=simple]';
+// $gridable-col-highlighted: '.row .grid__item[data-sh-column-attr-column_style=highlighted]';
+$gridable-col-boxed: '.row .grid__item[data-sh-column-attr-column_style=boxed]';
+
+
+
+
+
+/* Grid Layout
+   ========================================================================== */
+
+
+.gridable {
+	margin-left: -$outline-spacing;
+	margin-right: -$outline-spacing;
+
+	&, *, *:before, *:after {
+		box-sizing: border-box;
+	}
+}
+
+
+/**
+ * Grid Row
+ */
+
+#{$c-row} {
+	display: flex;
+	flex-flow: row wrap;
+    justify-content: space-between;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+
+/**
+ * Grid Columns
+ */
+
+#{$c-col} {
+    flex: 0 0 100%;
+    max-width: 100%;
+    max-width: 100%;
+}
+
+/**
+ * Grid Columns
+ */
+
+@for $i from 1 through 12 {
+    [#{$c-col-prefix}='#{$i}'] {
+        flex-basis: calc(#{percentage($i/12)});
+        width: percentage($i/12);
+    }
+}
+
+
+
+/* UI Interactions
+   ========================================================================== */
+
+
+#{$c-row} {
+	
+	// Row Ellipis Menu
+	&:after {
+		content: "...";
+		display: block;
+
+		color: #86909B;
+		font-size: 25px;
+	    font-weight: bold;
+	    font-family: initial;
+	    
+		position: absolute;
+		left: -15px;
+		top: 50%;
+		margin-top: -15px;
+		transform: rotate(90deg);
+
+		opacity: 0;
+		transition: opacity .2s;
+	}
+
+	> #{$c-col} {		
+		position: relative;
+		display: inline-block;
+		padding: $outline-spacing;
+
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+
+		& * {
+			-webkit-user-select: text; /* Chrome 49+ */
+			-moz-user-select: text; /* Firefox 43+ */
+			-ms-user-select: text; /* No support yet */
+			user-select: text; /* Likely future */
+		}
+
+		transition: all .2s ease-out;
+
+		&:first-child {
+			border-left: 0;
+		}
+
+		img {
+			margin-left: 0;
+			margin-right: 0;
+			max-width: 100%;
+		}
+	}
+
+	// Row Hover
+	&:hover {
+	    &:after {
+			opacity: 1;
+			cursor: pointer;
+		}
+	}
+
+	// Row Focused
+	&.is-focused {
+
+	}
+}
+ 
+
+#{$c-row__item}:not(:first-of-type):before {
+	content: " ";
+	display: block;
+	cursor: col-resize;
+	top: 0;
+	position: absolute;
+	opacity: 0;
+	bottom: 0;
+	left: -20px;
+	z-index: 9999;
+	width: 40px;
+}
+
+.gridable__content {
+	overflow: hidden;
+}
+
+.gridable.grabbing {
+	/* autoprefixer: off */
+
+	&,
+	* {
+		cursor: move;
+	}
+
+	#{$c-row__item}:not(:first-of-type):before {
+		cursor: move;
+	}
+}
+
+.no_select {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+// Following the WordPress Default Classes
+.mce-content-body {
+	// Change Outline Color for 
+	// better consistency with Gridable
+	*[contentEditable=false] { 
+
+		*[contentEditable=true] { 
+			&:hover {
+
+			}
+
+			&:focus {
+				outline-color: $gutenberg-border;
+			}
+		}
+
+		&[data-mce-selected] {
+			outline-color: $gutenberg-border;
+		}
+	}
+
+	// Gridable Specifics
+	#{$c-row}[contentEditable=false] { 
+		position: relative;
+		transition: box-shadow .2s ease-out;
+
+		#{$c-col}[contentEditable=true] { 
+			
+			// Hover State
+			// Disable Outline 
+			// Add a Left Border with Box Shadow
+			&:hover {
+				outline: none;   
+			    box-shadow: inset 9px 0px 0px -7px $gutenberg-border;
+			}
+
+			// Selected State
+			// Disable Outline 
+			// Add an Outline Border with Box Shadow
+			&:focus {
+				outline: none;
+				box-shadow: inset 0px 0px 0px 2px $gutenberg-border;
+			}
+		}
+
+		&:hover {
+			
+		}
+
+		&[data-mce-selected] {
+			// Disable Outline 
+			// Add an Outline Border with Box Shadow
+			outline: none;
+			box-shadow: inset 0px 0px 0px 2px $gutenberg-border;
+
+			// Hide Row Ellipsis Menu
+			&:after {
+				display: none;
+			}
+		}
+	}
+}
+
+
+/* Rows and Columns Style Variants.
+   ========================================================================== */
+
+
+// Rows Styling Rules
+#{$gridable-row-simple} {
+
+}
+
+// Full Width Light Background
+#{$gridable-row-boxed} { 
+	padding: 20px;
+    background-color: #222222;
+}
+
+// Columns Styling Rules
+// Default
+#{$gridable-col-simple} {
+
+}
+
+// Dark Background
+// White Text
+// Padding
+#{$gridable-col-boxed} {
+    // @extend %p-m; 
+    padding: 20px;
+    background-color: #222222;
+    
+    * { 
+        color: white;
+    }
+}
+
+

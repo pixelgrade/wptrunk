@@ -1,0 +1,82 @@
+@import 'preview';
+
+#open-customize-control-open_hours_overview_setting .customize-control-description {
+    margin-bottom: 10px;
+    font-style: normal;
+}
+
+.opening-hours-section {
+    margin-bottom: 60px;
+}
+
+.opening-hours-example {
+    margin-bottom: 10px;
+    padding: 6px 8px;
+    box-sizing: border-box;
+
+    overflow-x: scroll;
+    white-space: nowrap;
+
+    font-style: italic;
+    line-height: 18px;
+
+    color: #565D66;
+    background-color: #f4f4f4;
+}
+
+.opening-hours-list {
+    counter-reset: the-counter;
+    margin-left: 0;
+    list-style: none;
+
+    li:before {
+        content: counter(the-counter) '.';
+        counter-increment: the-counter;
+    }
+}
+
+.opening-hours-timestamps-explained {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+
+    background: url('../images/opening_hours_scheme.png') #ffffff center center no-repeat;
+    background-size: auto auto;
+
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    pointer-events: none;
+
+    .show-open-hours-scheme & {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .is--open-hours-section-expanded & {
+        left: -300px;
+    }
+}
+
+.ui-autocomplete {
+    background-color: #FFFFFF;
+    box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.18), 0 2px 10px 0 rgba(0,0,0,0.1);
+    border: 1px solid #CACACA;
+}
+
+.ui-menu-item {
+    padding: 3px 5px;
+
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 17px;
+
+    &:hover {
+        color: #ffffff;
+        background-color: #007ab6;
+
+        cursor: pointer;
+    }
+}
