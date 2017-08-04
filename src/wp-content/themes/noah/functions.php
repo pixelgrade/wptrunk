@@ -360,7 +360,7 @@ add_filter( 'pre_set_site_transient_update_themes', 'wupdates_check_JyzqR' );
 
 function wupdates_add_id_JyzqR( $ids = array() ) {
 	$slug         = basename( get_template_directory() );
-	$ids[ $slug ] = array( 'name' => 'Noah', 'slug' => 'noah', 'id' => 'JyzqR', 'type' => 'theme', 'digest' => '39b0e28e2807fd4136311088b4b1af25', );
+	$ids[ $slug ] = array( 'name' => 'Noah', 'slug' => 'noah', 'id' => 'JyzqR', 'type' => 'theme', 'digest' => '39b0e28e2807fd4136311088b4b1af25' );
 
 	return $ids;
 }
