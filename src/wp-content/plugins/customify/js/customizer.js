@@ -62,18 +62,10 @@
 		});
 
 		// for each range input add a value preview output
-		$('input[type="range"]').each(function () {
-			var $clone = $(this).clone();
+		$('.accordion-section-content[id*="' + customify_settings.options_name + '"]').each(function () {
 
-			$clone
-				.attr('type', 'number')
-				.attr('class', 'range-value');
-
-			$(this).after($clone);
-
-			$(this).on('input', function () {
-				$(this).siblings('.range-value').val($(this).val());
-			});
+            // Initialize range fields logic
+            customifyHandleRangeFields(this);
 		});
 
 		if ( $('button[data-action="reset_customify"]').length > 0 ) {
@@ -107,11 +99,12 @@
 			// add a reset button for each panel
 			$('.panel-meta').each(function ( el, key ) {
 				var container = $(this).parents('.control-panel'),
-					id = container.attr('id'),
-					panel_id = id.replace('accordion-panel-', '');
+					id = container.attr('id');
 
-
-				$(this).parent().append('<button class="reset_panel button" data-panel="' + panel_id + '">Panel\'s defaults</button>');
+				if ( typeof id !== 'undefined' ) {
+                    var panel_id = id.replace('accordion-panel-', '');
+                    $(this).parent().append('<button class="reset_panel button" data-panel="' + panel_id + '">Panel\'s defaults</button>');
+                }
 			});
 
 			// reset panel
@@ -152,16 +145,15 @@
 
 			//add reset section
 			$('.accordion-section-content').each(function ( el, key ) {
-				var section = $(this).parent(),
-					section_id = section.attr('id');
+				var section_id = $(this).attr('id');
 
 				if ( ( ( !_.isUndefined(section_id) ) ? section_id.indexOf(customify_settings.options_name) : -1 ) === -1 ) {
 					return;
 				}
 
-				if ( !_.isUndefined(section_id) && section_id.indexOf('accordion-section-') > -1 ) {
-					var id = section_id.replace('accordion-section-', '');
-					$(this).prepend('<button class="reset_section button" data-section="' + id + '">Section\'s defaults</button>');
+				if ( !_.isUndefined(section_id) && section_id.indexOf('sub-accordion-section-') > -1 ) {
+					var id = section_id.replace('sub-accordion-section-', '');
+					$(this).append('<button class="reset_section button" data-section="' + id + '">Reset All Options for This Section</button>');
 				}
 			});
 
@@ -342,10 +334,36 @@
 		})();
 	});
 
+    var customifyHandleRangeFields = function (el) {
+
+        // For each range input add a number field (for preview mainly - but it can also be used for input)
+        $(el).find('input[type="range"]').each(function () {
+            if ( ! $(this).siblings('.range-value').length ) {
+                var $clone = $(this).clone();
+
+                $clone
+                    .attr('type', 'number')
+                    .attr('class', 'range-value');
+
+                $(this).after($clone);
+            }
+
+            // Update the number field when changing the range
+            $(this).on('change', function () {
+                $(this).siblings('.range-value').val($(this).val());
+            });
+
+            // And the other way around, update the range field when changing the number
+            $($clone).on('change', function () {
+                $(this).siblings('input[type="range"]').val($(this).val());
+            });
+        });
+    }
+
 	/**
 	 * This function will search for all the interdependend fields and make a bound between them.
 	 * So whenever a target is changed, it will take actions to the dependent fields.
-	 * @TOOD  this is still written in a barbaric way, refactor when needed
+	 * @TODO  this is still written in a barbaric way, refactor when needed
 	 */
 	var customifyFoldingFields = function () {
 
@@ -557,6 +575,7 @@
 			field = $('[data-customize-setting-link="' + setting_id + '"]'),
 			field_class = $(field).parent().attr('class');
 
+		// Legacy field type
 		if ( !_.isUndefined(field_class) && field_class === 'customify_typography' ) {
 
 			var family_select = field.siblings('select');
@@ -596,7 +615,40 @@
 				option.attr('selected', 'selected');
 				// option.parents('select').trigger('change');
 			} else if (  _.isObject(value) ) {
-				// @todo process each font property
+				// Find the options list wrapper
+                var optionsList = field.parent().children('.font-options__options-list');
+
+                if ( optionsList.length ) {
+                    // We will process each font property and update it
+                    _.each(value, function (val, key) {
+                        // We need to map the keys to the data attributes we are using - I know :(
+                        var mappedKey = key;
+                        switch (key) {
+                            case 'font-family':
+                                mappedKey = 'font_family';
+                                break;
+                            case 'font-size':
+                                mappedKey = 'font_size';
+                                break;
+                            case 'font-weight':
+                                mappedKey = 'selected_variants';
+                                break;
+                            case 'letter-spacing':
+                                mappedKey = 'letter_spacing';
+                                break;
+                            case 'text-transform':
+                                mappedKey = 'text_transform';
+                                break;
+                            default:
+                                break;
+                        }
+                        var subField = optionsList.find('[data-field="' + mappedKey + '"]');
+                        if ( subField.length ) {
+                            subField.val(val);
+                            subField.trigger('change');
+                        }
+                    });
+                }
 			}
 
 		} else {
@@ -995,7 +1047,7 @@
 					debug: false
 				};
 
-				// all this fuss is for the case when the font doesn't come with variants from PHP, lile a theme_font
+				// all this fuss is for the case when the font doesn't come with variants from PHP, like a theme_font
 				if ( this.options.length === 0 ) {
 					var wraper = $(el).closest('.font-options__wrapper'),
 						font = wraper.find('.customify_font_family'),
@@ -1031,7 +1083,7 @@
 				.on('change', function ( e ) {
 					var wraper = $(e.target).closest('.font-options__wrapper');
 					var current_value = update_font_value(wraper);
-					// temporary just set the new value and refresh the previewr
+					// temporary just set the new value and refresh the previewer
 					// we may update this with a live version sometime
 					var value_holder = wraper.children('.customify_font_values');
 					var setting_id = $(value_holder).data('customize-setting-link');
@@ -1094,9 +1146,9 @@
 		}
 
 		/**
-		 * This function updates the data in font weight selector from the givin <option> element
+		 * This function updates the data in font weight selector from the given <option> element
 		 *
-		 * @param new_option
+		 * @param option
 		 * @param wraper
 		 */
 		function update_weight_field( option, wraper ) {
@@ -1139,8 +1191,8 @@
 		}
 
 		/**
-		 *  This function updates the data in font subset selector from the givin <option> element
-		 * @param new_option
+		 *  This function updates the data in font subset selector from the given <option> element
+		 * @param option
 		 * @param wraper
 		 */
 		function update_subset_field( option, wraper ) {
@@ -1225,7 +1277,7 @@
 						new_vals['variants'] = maybeJsonParse(variants);
 					}
 
-					if ( typeof subsets !== "subsets") {
+					if ( typeof subsets !== "undefined") {
 						new_vals['subsets'] = maybeJsonParse(subsets);
 					}
 				}

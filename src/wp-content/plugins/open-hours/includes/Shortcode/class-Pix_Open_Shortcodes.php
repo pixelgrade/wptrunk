@@ -2,8 +2,18 @@
 
 class Pix_Open_Shortcodes {
 
-	public function __construct() {
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'Helper/class-Pix_Open_Helper.php';
+	/**
+	 * The main plugin object (the parent).
+	 * @var     OpenPlugin
+	 * @access  public
+	 * @since     1.0.0
+	 */
+	public $parent = null;
+
+	public function __construct( $parent ) {
+		$this->parent = $parent;
+
+		require_once $this->parent->plugin_basepath . 'includes/Helper/class-Pix_Open_Helper.php';
 	}
 
 	/**
@@ -46,28 +56,23 @@ class Pix_Open_Shortcodes {
 				<?php
 				foreach ( $schedule as $day => $hours ) {
 				?>
-				<tr>
+				<tr class="open-entry">
 					<td>
-						<div class="open-entry">
-							<div class="open-entry__day"><?php echo $day; ?></div>
+						<span class="open-entry__day"><?php echo $day; ?></span>
 					</td>
 					<td>
 						<?php
-						if ( $hours === $a['closed_label'] ) {
-							?>
-							<div class="open-entry__hours-closed"
-							     id=<?php echo '-hours-'; ?>><?php echo $hours; ?></div>
+						if ( $hours === $a['closed_label'] ) { ?>
+							<span class="open-entry__hours-closed"><?php echo $hours; ?></span>
 							<?php
-						} else {
-							?>
-							<div class="open-entry__hours-schedule" id=<?php echo 'sdsa'; ?>><?php echo $hours; ?></div>
+						} else { ?>
+							<span class="open-entry__hours-schedule"><?php echo $hours; ?></span>
 							<?php
-						}
-						}
-						?>
+						} ?>
 					</td>
-					</div>
 				</tr>
+				<?php }
+				?>
 			</table>
 			<?php
 		} else {

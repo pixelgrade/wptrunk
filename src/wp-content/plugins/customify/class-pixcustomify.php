@@ -163,8 +163,6 @@ class PixCustomifyPlugin {
 
 	/**
 	 * Register our actions and filters
-	 *
-	 * @return null
 	 */
 	function register_hooks() {
 		/*
@@ -183,9 +181,11 @@ class PixCustomifyPlugin {
 		 */
 		$this->init_plugin_configs();
 
-		// We can load the actual plugins config only on after_setup_theme so we can give the themes a change to have their say
+		// We need to load the configuration as late as possible so we allow all that want to influence it
+		// We need the init hook and not after_setup_theme because there a number of plugins that fire up on init (like certain modules from Jetpack)
+		// We need to be able to load things like components configs depending on those firing up or not
 		// DO NOT TRY to use the Customify values before this!
-		add_action( 'after_setup_theme', array( $this, 'load_plugin_configs' ), 5 );
+		add_action( 'init', array( $this, 'load_plugin_configs' ), 15 );
 
 		/*
 		 * Now setup the admin side of things
@@ -218,7 +218,7 @@ class PixCustomifyPlugin {
 		// The frontend effects of the Customizer controls
 		$load_location = $this->get_plugin_setting( 'style_resources_location', 'wp_head' );
 
-		add_action( $load_location, array( $this, 'output_dynamic_style' ), 99999 );
+		add_action( $load_location, array( $this, 'output_dynamic_style' ), 99 );
 		add_action( 'wp_head', array( $this, 'output_typography_dynamic_style' ), 10 );
 
 		add_action( 'customize_register', array( $this, 'remove_default_sections' ), 11 );
@@ -237,6 +237,17 @@ class PixCustomifyPlugin {
 		add_filter( 'default_option_sharing-options', array( $this, 'default_jetpack_sharing_options' ), 10, 1 );
 
 		add_action( 'rest_api_init', array( $this, 'add_rest_routes_api' ) );
+
+		/*
+		 * Development related
+		 */
+		if ( defined( 'CUSTOMIFY_DEV_FORCE_DEFAULTS' ) && true === CUSTOMIFY_DEV_FORCE_DEFAULTS ) {
+			// If the development constant CUSTOMIFY_DEV_FORCE_DEFAULTS has been defined we will not save anything in the database
+			// Always go with the default
+			add_filter( 'customize_changeset_save_data', array( $this, 'prevent_changeset_save_in_devmode' ), 50, 2 );
+			// Add a JS to display a notification
+			add_action( 'customize_controls_print_footer_scripts', array( $this, 'prevent_changeset_save_in_devmode_notification' ), 100 );
+		}
 	}
 
 	/**
@@ -481,7 +492,7 @@ class PixCustomifyPlugin {
 	}
 
 	function add_rest_routes_api(){
-		register_rest_route( 'customfiy/v1', '/delete_theme_mod', array(
+		register_rest_route( 'customify/v1', '/delete_theme_mod', array(
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'delete_theme_mod' ),
 			'permission_callback' => array( $this, 'permission_nonce_callback' ),
@@ -489,9 +500,8 @@ class PixCustomifyPlugin {
 	}
 
 	function delete_theme_mod(){
-		$user = wp_get_current_user();
-		if ( ! $user->caps['administrator'] ) {
-			wp_send_json_error('no admin');
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error('You don\'t have admin privileges.');
 		}
 
 		$config = apply_filters('customify_filter_fields', array() );
@@ -504,7 +514,7 @@ class PixCustomifyPlugin {
 
 		remove_theme_mod( $key );
 
-		wp_send_json_success('Bby ' . $key . '!');
+		wp_send_json_success('Deleted ' . $key . ' theme mod!');
 	}
 
 	function permission_nonce_callback() {
@@ -583,7 +593,7 @@ class PixCustomifyPlugin {
 				$options['value']         = $this->get_option( $option_id );
 				$custom_background_output = $this->process_custom_background_field_output( $option_id, $options ); ?>
 
-				<style id="custom_backgorund_output_for_<?php echo $option_id; ?>">
+				<style id="custom_background_output_for_<?php echo $option_id; ?>">
 					<?php
 					if ( isset( $custom_background_output ) && ! empty( $custom_background_output )) {
 						echo $custom_background_output;
@@ -1196,7 +1206,9 @@ class PixCustomifyPlugin {
 			if ( $this->plugin_settings['enable_reset_buttons'] ) {
 				// create a toolbar section which will be present all the time
 				$reset_section_settings = array(
-					'title'   => 'Customify toolbar',
+					'title'   => 'Customify Toolbox',
+					'capability' => 'manage_options',
+					'priority' => 999999999,
 					'options' => array(
 						'reset_all_button' => array(
 							'type'   => 'button',
@@ -1209,10 +1221,7 @@ class PixCustomifyPlugin {
 
 				$wp_customize->add_section(
 					'customify_toolbar',
-					array(
-						'title'    => '',
-						'priority' => 999999999
-					)
+					$reset_section_settings
 				);
 
 				$wp_customize->add_setting(
@@ -1223,7 +1232,7 @@ class PixCustomifyPlugin {
 					$wp_customize,
 					'reset_customify',
 					array(
-						'label'    => __( 'Reset Customify to Defaults', 'customify' ),
+						'label'    => __( 'Reset All Customify Options to Default', 'customify' ),
 						'section'  => 'customify_toolbar',
 						'settings' => 'reset_customify',
 						'action'   => 'reset_customify',
@@ -1255,38 +1264,36 @@ class PixCustomifyPlugin {
 		do_action( 'customify_create_custom_control', $wp_customize );
 	}
 
+	/**
+	 * @param string $panel_id
+	 * @param string $section_key
+	 * @param string $options_name
+	 * @param array $section_settings
+	 * @param WP_Customize_Manager $wp_customize
+	 */
 	protected function register_section( $panel_id, $section_key, $options_name, $section_settings, $wp_customize ) {
 
 		if ( isset( $this->plugin_settings['disable_customify_sections'] ) && isset( $this->plugin_settings['disable_customify_sections'][ $section_key ] ) ) {
 			return;
 		}
 
-		$section_args = array(
+		// Merge the section settings with the defaults
+		$section_args = wp_parse_args( $section_settings, array(
 			'priority'   => 10,
-			'capability' => 'edit_theme_options',
-			'title'      => __( 'Title Section is required', '' ),
 			'panel'      => $panel_id,
-		);
+			'capability' => 'edit_theme_options',
+			'theme_supports' => '',
+			'title'      => __( 'Title Section is required', 'customify' ),
+			'description' => '',
+			'type' => 'default',
+			'description_hidden' => false,
+		) );
 		$section_id   = $options_name . '[' . $section_key . ']';
 
-		if ( isset( $section_settings['priority'] ) && ! empty( $section_settings['priority'] ) ) {
-			$section_args['priority'] = $section_settings['priority'];
-		}
-
-		if ( isset( $section_settings['title'] ) && ! empty( $section_settings['title'] ) ) {
-			$section_args['title'] = $section_settings['title'];
-		}
-
-		if ( isset( $section_settings['theme_supports'] ) && ! empty( $section_settings['theme_supports'] ) ) {
-			$section_args['theme_supports'] = $section_settings['theme_supports'];
-		}
-
-		if ( isset( $section_settings['description'] ) && ! empty( $section_settings['description'] ) ) {
-			$section_args['description'] = $section_settings['description'];
-		}
-
+		// Add the new section to the Customizer
 		$wp_customize->add_section( $section_id, $section_args );
 
+		// Now go through each section option and add the fields
 		foreach ( $section_settings['options'] as $option_id => $option_config ) {
 
 			if ( empty( $option_id ) || ! isset( $option_config['type'] ) ) {
@@ -1301,6 +1308,11 @@ class PixCustomifyPlugin {
 	}
 
 	/**
+	 * Register a Customizer field
+	 *
+	 * @see WP_Customize_Setting
+	 * @see WP_Customize_Control
+	 *
 	 * @param string $section_id
 	 * @param string $setting_id
 	 * @param array $setting_config
@@ -1863,8 +1875,13 @@ class PixCustomifyPlugin {
 	 * @return bool|null|string
 	 */
 	public function get_option( $option, $default = null, $alt_opt_name = null ) {
-
-		$return = $this->get_value( $option, $alt_opt_name );
+		// If the development constant CUSTOMIFY_DEV_FORCE_DEFAULTS has been defined we will not retrieve anything from the database
+		// Always go with the default
+		if ( defined( 'CUSTOMIFY_DEV_FORCE_DEFAULTS' ) && true === CUSTOMIFY_DEV_FORCE_DEFAULTS ) {
+			$return = null;
+		} else {
+			$return = $this->get_value( $option, $alt_opt_name );
+		}
 
 		if ( $return !== null ) {
 			return $return;
@@ -2028,6 +2045,47 @@ class PixCustomifyPlugin {
 	}
 
 	/**
+	 * Prevent saving of plugin options in the Customizer
+	 *
+	 * @param array $data The data to save
+	 * @param array $filter_context
+	 *
+	 * @return array
+	 */
+	public function prevent_changeset_save_in_devmode( $data, $filter_context ) {
+		// Get the options key
+		$options_key = $this->customizer_config['opt-name'];
+		if ( ! empty( $options_key ) ) {
+			// Remove any Customify data thus preventing it from saving
+			foreach ( $data as $key => $value ) {
+				if ( false !== strpos( $key, $options_key ) ) {
+					unset( $data[$key] );
+				}
+			}
+		}
+
+		return $data;
+	}
+
+	public function prevent_changeset_save_in_devmode_notification() { ?>
+		<script type="application/javascript">
+            (function ( $, exports, wp ) {
+                'use strict';
+                // when the customizer is ready add our notification
+                wp.customize.bind('ready', function () {
+                    wp.customize.notifications.add( 'customify_force_defaults', new wp.customize.Notification(
+                        'customify_force_defaults',
+                        {
+                            type: 'warning',
+                            message: '<strong style="margin-bottom: ">Customify: Development Mode</strong><p>All the options are switched to default. While they are changing in the live preview, they will not be kept when publish.</p>'
+                        }
+                    ) );
+                });
+            })(jQuery, window, wp);
+		</script>
+	<?php }
+
+	/**
 	 * Return an instance of this class.
 	 * @since     1.0.0
 	 * @return    PixCustomifyPlugin    A single instance of this class.
@@ -2044,7 +2102,7 @@ class PixCustomifyPlugin {
 	 * @param string $version Version.
 	 *
 	 * @see    PixCustomifyPlugin()
-	 * @return object Main PixCustomifyPlugin instance
+	 * @return PixCustomifyPlugin Main PixCustomifyPlugin instance
 	 */
 	public static function instance( $file = '', $version = '1.0.0' ) {
 		// If the single instance hasn't been set, set it now.

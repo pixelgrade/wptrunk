@@ -25,7 +25,7 @@ $attrs = array(
 	'type' => 'checkbox',
 ); ?>
 <div class="reset_customify_theme_mod">
-	<div class="button" id="reset_theme_mods"><?php esc_html_e( 'Reset theme mod', 'customify' ); ?></div>
+	<div class="button" id="reset_theme_mods"><?php esc_html_e( 'Reset Theme Mods', 'customify' ); ?></div>
 	<script>
 		(function ($) {
 			$(document).ready(function () {
@@ -37,7 +37,7 @@ $attrs = array(
 					}
 
 					$.ajax({
-						url: customify_settings.wp_rest.root + 'customfiy/v1/delete_theme_mod',
+						url: customify_settings.wp_rest.root + 'customify/v1/delete_theme_mod',
 						method: 'POST',
 						beforeSend: function (xhr) {
 							xhr.setRequestHeader('X-WP-Nonce', customify_settings.wp_rest.nonce);
@@ -47,7 +47,9 @@ $attrs = array(
 						}
 					}).done(function (response) {
 						if ( response.success ) {
-							alert( response.data );
+							alert( 'Success: ' + response.data );
+						} else {
+                            alert( 'No luck: ' + response.data );
 						}
 					}).error(function (e) {
 						console.log(e);
@@ -58,3 +60,5 @@ $attrs = array(
 		})(jQuery)
 	</script>
 </div>
+<br>
+<div class="field-desc"><?php esc_html_e('Resets all the Customizer settings introduced by the plugin. It will NOT reset core Customizer settings or plugin settings.'); ?></div>
